@@ -63,7 +63,7 @@ docker container logs meu-nginx
 docker container stats meu-nginx
 
 # Criar uma imagem a partir de um Dockerfile
-docker image build 
+docker image build -t meu-nginx:1.0 .
 ```
 
 ### Desafio Day 1
