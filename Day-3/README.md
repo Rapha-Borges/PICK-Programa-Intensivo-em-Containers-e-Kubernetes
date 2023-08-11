@@ -22,7 +22,7 @@ docker build -t distroless-go .
 docker run --rm -it -p 8080:8080 distroless-go
 ```
 
-#### Desafio
+#### Desafio proposto em aula
 
 Rodar o app de senhas em uma imagem Distroless.
 
@@ -56,6 +56,27 @@ Rodar o app de senhas em uma imagem Distroless.
 
 O Trivy é um scanner de vulnerabilidade de código aberto para contêineres e sistemas operacionais, detectando pacotes e bibliotecas desatualizados, bem como códigos maliciosos em arquivos de imagem (por exemplo, arquivos binários ELF). O Trivy é executado em contêineres e sistemas operacionais comuns, como Alpine, Debian, RHEL, CentOS, Ubuntu e Amazon Linux AMI.
 
+### Como usar o Trivy?
+
+Para usar o Trivy, você precisa [instalar o binário](https://aquasecurity.github.io/trivy/v0.44/getting-started/installation/)  em seu sistema operacional. Você pode fazer isso usando o gerenciador de pacotes do seu sistema operacional ou baixando o binário do site do Trivy. Após a instalação, você pode executar o Trivy em uma imagem Docker usando o comando abaixo:
+
+```bash
+trivy image <image-name>
+```
+
 ### O que é o Docker Scout?
 
 O Docker Scout é uma ferramenta de linha de comando que permite que você verifique rapidamente se há vulnerabilidades de segurança em suas imagens do Docker. Ele usa o Trivy para verificar as imagens e fornece uma saída fácil de ler.
+
+### Como usar o Docker Scout?
+
+Para usar o Docker Scout, você precisa instalar o binário em seu sistema operacional. Você pode fazer isso usando o gerenciador de pacotes do seu sistema operacional ou baixando o binário do site do Docker Scout. Após a instalação, você pode executar o Docker Scout em uma imagem Docker usando o comando abaixo:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+sh install-scout.sh
+```
+
+```bash
+docker scout cves <image-name>
+```
