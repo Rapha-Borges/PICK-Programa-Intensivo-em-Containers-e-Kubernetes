@@ -7,3 +7,5 @@ O PICK é um programa intensivo em containers que tem como objetivo capacitar os
 ## [Day 2 - Dockerfile, Entrypoint e Healthcheck](/Day-2/README.md)
 
 ## [Day 3 - Aprofundando em Containers e Docker - Distroless, Trivy e Docker Scout](/Day-3/README.md)
+
+## [Day 4 - Volumes - Bind, tmpfs e volume](/Day-4/README.md)
