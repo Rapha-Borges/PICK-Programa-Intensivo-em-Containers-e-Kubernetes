@@ -30,4 +30,32 @@ O volume é um tipo de volume que permite montar um diretório dentro do contain
 
 ```bash
 docker run -d --name nginx -p 8080:80 -v /usr/share/nginx/html nginx
+docker run -d --name nginx -p 8080:80 -v <volume>:/usr/share/nginx/html nginx
+```
+
+## Comandos
+
+```bash
+# Criar um volume
+docker volume create <nome>
+
+# Listar volumes
+docker volume ls
+
+# Inspect volume
+docker volume inspect <nome>
+
+# Remover volume
+docker volume rm <nome>
+
+# Remover todos os volumes não utilizados
+docker volume prune
+```
+
+```bash	
+# Localizar o local onde o volume está montado
+docker inspect <container> | grep Source
+
+# Localizar o local onde o volume está montado 
+docker volume inspect --format '{{ .Mountpoint }}' <container>
 ```
