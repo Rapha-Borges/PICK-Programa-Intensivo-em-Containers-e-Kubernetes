@@ -50,9 +50,7 @@ docker volume rm <nome>
 
 # Remover todos os volumes não utilizados
 docker volume prune
-```
 
-```bash	
 # Localizar o local onde o volume está montado
 docker inspect <container> | grep Source
 
