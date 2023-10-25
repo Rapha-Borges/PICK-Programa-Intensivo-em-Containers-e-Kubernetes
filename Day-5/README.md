@@ -33,6 +33,18 @@ A none é uma rede que não permite que os containers se comuniquem entre si e c
 docker network create --driver none <nome>
 ```
 
+### Overlay
+
+A overlay é uma rede que permite que os containers se comuniquem entre si e com o host. É possível criar uma overlay para cada aplicação ou utilizar a overlay padrão.
+
+
+```bash
+# Criar uma rede overlay
+docker network create --driver overlay <nome>
+```
+
+
+
 
 ## Limites de Recursos
 
