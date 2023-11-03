@@ -74,4 +74,140 @@ networks:
 
 ## Utilizando volumes com o Docker Compose
 
+A utilização de volumes com o Docker Compose é muito simples, basta definir o volume no arquivo `docker-compose.yml`. Isso fará com que o Docker Compose crie o volume automaticamente.
+
 ```yaml
+version: "3.8"
+services:
+  giropops-senhas:
+    image: linuxtips/giropops-senhas:1.0
+    ports:
+      - "5000:5000"
+    networks:
+      - giropops
+    environment:
+        REDIS_HOST: redis
+    volumes:
+        - strigus:/strigus
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - giropops
+
+networks:
+    giropops:
+        driver: bridge
+
+volumes:
+    strigus:
+```
+
+## Buildando várias instâncias (réplicas) de uma imagem com o Docker Compose
+
+```bash
+# Executar o Docker Compose com 3 réplicas
+docker-compose up --scale <nome>=3
+```
+
+## Limites e reservas de recursos com o Docker Compose
+
+```yaml
+version: "3.8"
+services:
+  giropops-senhas:
+    image: linuxtips/giropops-senhas:1.0
+    ports:
+      - "5000:5000"
+    networks:
+      - giropops
+    environment:
+        REDIS_HOST: redis
+    volumes:
+        - strigus:/strigus
+    deploy:
+        resources:
+            reservations:
+                cpus: "0.25"
+                memory: 128M
+            limits:
+                cpus: "0.5"
+                memory: 256M
+    depends_on:
+        - redis
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - giropops
+    deploy:
+        resources:
+            reservations:
+                cpus: "0.25"
+                memory: 256M
+            limits:
+                cpus: "0.5"
+                memory: 512M
+
+networks:
+    giropops:
+        driver: bridge
+
+volumes:
+    strigus:
+```
+
+## Healthcheck com o Docker Compose
+
+```yaml
+version: "3.8"
+services:
+  giropops-senhas:
+    image: linuxtips/giropops-senhas:1.0
+    ports:
+      - "5000:5000"
+    networks:
+      - giropops
+    environment:
+        REDIS_HOST: redis
+    volumes:
+        - strigus:/strigus
+    deploy:
+        resources:
+            reservations:
+                cpus: "0.25"
+                memory: 128M
+            limits:
+                cpus: "0.5"
+                memory: 256M
+    depends_on:
+        - redis
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - giropops
+    deploy:
+        resources:
+            reservations:
+                cpus: "0.25"
+                memory: 256M
+            limits:
+                cpus: "0.5"
+                memory: 512M
+    healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 1m30s
+        timeout: 10s
+        retries: 3
+
+networks:
+    giropops:
+        driver: bridge
+
+volumes:
+    strigus:
+```
