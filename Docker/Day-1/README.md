@@ -23,7 +23,8 @@ São mecanismos de limitação de recursos do sistema operacional.
 ### Instalando o Docker
 
 ```bash
-curl -fsSL https://get.docker.com | bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 ```
 
 ### Comandos básicos do Docker:
