@@ -113,8 +113,113 @@ chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 ```
 
-### Criando um Cluster Kubernetes com Kind
+### Criando e deletando um Cluster Kubernetes com Kind
 
 ```bash
 kind create cluster
+```
+
+```bash
+kubectl get nodes
+```
+
+```bash
+kind delete cluster
+```
+
+### Criando um Cluster multi-nodes com Kind
+
+```bash
+kind create cluster --config cluster.yaml
+```
+
+```bash
+kubectl get nodes
+```
+
+```bash
+kind delete cluster
+```
+
+## Primeiros passos com o Kubectl
+
+### Namespace
+
+O namespace é um recurso do Kubernetes que permite criar um ambiente isolado dentro do cluster. Ele é muito utilizado para separar os ambientes, como por exemplo, desenvolvimento, homologação e produção.
+
+### Criando um Namespace
+
+```bash
+kubectl create namespace dev
+```
+
+```bash
+kubectl get namespaces
+```
+
+### Verificando os Pods de um Namespace
+
+```bash
+kubectl get pods -n kube-system
+```
+
+### Comandos úteis
+
+```bash
+kubectl get nodes
+kubectl get pods
+kubectl get pods -n kube-system
+kubectl get pods -o wide
+kubectl get deployments -A
+kubectl get services -A
+kubectl get replicasets -A
+kubectl get all -A
+```
+
+### Criando um Pod
+
+```bash
+kubectl run --image nginx --port 80 giropops
+```
+
+```bash
+kubectl get pods
+```
+
+```bash
+kubectl exec -ti giropops -- bash
+curl localhost
+exit
+```
+
+### Criando um Service
+
+```bash
+kubectl expose pod giropops --type NodePort
+```
+
+```bash
+kubectl get services
+```
+
+## Usando o dry-run
+
+```bash
+kubectl run --image nginx --port 80 giropops --dry-run=client -o yaml
+```
+
+```bash
+kubectl run --image nginx --port 80 giropops --dry-run=client -o yaml > pod.yaml
+```
+
+```bash
+kubectl apply -f pod.yaml
+```
+
+```bash
+kubectl get pods
+```
+
+```bash
+kubectl delete -f pod.yaml
 ```
