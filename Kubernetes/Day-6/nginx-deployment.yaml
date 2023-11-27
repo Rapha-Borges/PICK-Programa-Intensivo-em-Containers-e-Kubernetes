@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources:
+          limits:
+            cpu: 0.5
+            memory: 256Mi
+          requests:
+            cpu: 0.3
+            memory: 64Mi
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: nginx-data
+      volumes:
+      - name: nginx-data
+        persistentVolumeClaim:
+          claimName: meu-pvc
