@@ -33,3 +33,5 @@ O PICK é um programa intensivo em containers que tem como objetivo capacitar os
 ### [Day 7 - StatefulSets e Services](/Kubernetes/Day-7/README.md)
 
 ### [Day 8 - Secrets e ConfigMaps](/Kubernetes/Day-8/README.md)
+
+### [Day 9 - Prometheus + Kubernetes](/Kubernetes/Day-9/README.md)
