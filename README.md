@@ -1,6 +1,6 @@
-# PICK (Programa Intensivo em Containers)
+# PICK (Programa Intensivo em Containers e Kubernetes)
 
-O PICK é um programa intensivo em containers que tem como objetivo capacitar os participantes a desenvolverem aplicações em containers, utilizando as principais ferramentas do mercado, como Docker, Kubernetes, Git, ArgoCD, entre outras.
+O PICK é um programa intensivo em containers e Kubernetes que tem como objetivo capacitar os participantes a desenvolverem aplicações em containers, utilizando as principais ferramentas do mercado, como Docker, Kubernetes, Git, ArgoCD, entre outras.
 
 ## Docker
 
