@@ -1,4 +1,4 @@
-# Aprofundando em Containers e Docker - Distroless, Trivy e Docker Scout
+# Aprofundando em Containers e Docker - Distroless, Trivy, Docker Scout e Cosign
 
 ### O que é o Distroless?
 
@@ -79,4 +79,34 @@ sh install-scout.sh
 
 ```bash
 docker scout cves <image-name>
+```
+
+### O que é o Cosign?
+
+O Cosign é uma ferramenta de linha de comando que permite que você assine e verifique imagens do Docker. Ele usa o TUF para assinar e verificar as imagens.
+
+### Instalando o Cosign
+
+```bash
+curl -O -L "https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64"
+sudo mv cosign-linux-amd64 /usr/local/bin/cosign
+sudo chmod +x /usr/local/bin/cosign
+```
+
+### Gerando uma chave
+
+```bash
+cosign generate-key-pair
+```
+
+### Assinando uma imagem
+
+```bash
+cosign sign --key cosign.key {image}
+```
+
+### Verificando uma imagem
+
+```bash
+cosign verify --key cosign.pub {image}
 ```
