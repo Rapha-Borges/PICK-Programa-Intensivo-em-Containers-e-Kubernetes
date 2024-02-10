@@ -1,0 +1,47 @@
+---
+# Definição de HPA com configurações avançadas de comportamento
+apiVersion: autoscaling/v2            # Versão da API que define um HPA
+kind: HorizontalPodAutoscaler         # Tipo de recurso que estamos definindo
+metadata:
+  name: giropops-hpa                  # Nome do nosso HPA
+  namespace: giropops-senhas          # Namespace onde o HPA será criado
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1               # Versão da API do recurso que será escalado
+    kind: Deployment                  # Tipo do recurso que será escalado
+    name: giropops-deployment         # Nome do recurso que será escalado
+  minReplicas: 1                      # Número mínimo de réplicas
+  maxReplicas: 3                      # Número máximo de réplicas
+  metrics:                            # Métricas que serão utilizadas para escalar
+    - type: Resource                  # Tipo de métrica que será utilizada
+      resource:                       # Recurso que será utilizado
+        name: cpu                     # Nome do recurso que será utilizado (CPU)
+        target:                       # Configurações da métrica
+          type: Utilization           # Tipo da métrica
+          averageUtilization: 50      # Valor da métrica em porcentagem
+    - type: Resource                  # Tipo de métrica que será utilizada
+      resource:                       # Recurso que será utilizado
+        name: memory                  # Nome do recurso que será utilizado (Memória)
+        target:                       # Configurações da métrica
+          type: Utilization           # Tipo da métrica
+          averageUtilization: 50      # Valor da métrica em porcentagem
+    - type: ContainerResource         # Tipo de métrica que será utilizada (Recurso do Container)
+      containerResource:              # Recurso que será utilizado
+        name: cpu                     # Nome do recurso que será utilizado (CPU do Container)
+        container: giropops-senhas    # Nome do container que será utilizado
+        target:                       # Configurações da métrica
+          type: Utilization           # Tipo da métrica
+          averageUtilization: 50      # Valor da métrica em porcentagem
+  behavior:                           # Comportamento do HPA
+    scaleDown:                        # Comportamento para escalar para baixo
+      stabilizationWindowSeconds: 300 # Tempo de estabilização em segundos
+      policies:                       # Políticas de escala para baixo
+        - type: Pods                  # Tipo de política
+          value: 100                  # Valor da política em porcentagem
+          periodSeconds: 15           # Período em segundos
+    scaleUp:                          # Comportamento para escalar para cima
+      stabilizationWindowSeconds: 0   # Tempo de estabilização em segundos
+      policies:                       # Políticas de escala para cima
+        - type: Pods                  # Tipo de política
+          value: 100                  # Valor da política em porcentagem
+          periodSeconds: 15           # Período em segundos
