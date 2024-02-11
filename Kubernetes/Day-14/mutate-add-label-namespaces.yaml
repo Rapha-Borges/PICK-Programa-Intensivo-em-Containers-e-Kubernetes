@@ -1,0 +1,16 @@
+apiVersion: kyverno.io/v1                       # Versão da API que define uma política
+kind: ClusterPolicy                             # Tipo de política que estamos definindo
+metadata:                                       # Metadados da política
+  name: add-label-namespaces                    # Nome da política
+spec:                                           # Especificações da política
+  rules:                                        # Regras da política
+  - name: add-label-ns                          # Nome da regra
+    match:                                      # Condições para aplicar a regra
+      resources:                                # Recursos que serão validados
+        kinds:                                  # Tipos de recursos que serão validados
+        - Namespace                             # Tipo de recurso que será validado
+    mutate:                                     # Mutação que será aplicada
+      patchStrategicMerge:                      # Caminho para aplicar a mutação
+        metadata:                               # Metadados do recurso
+          labels:                               # Labels que serão adicionados
+            projeto: "pick"                     # Label que será adicionado

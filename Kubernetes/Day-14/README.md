@@ -1,144 +1,120 @@
-# Horizontal Pod Autoscaler(HPA), Metrics Server e Locust
+# Policies no Kubernetes com Kyverno
 
-### O que é o HPA?
+O Kyverno é uma ferramenta que permite criar políticas de validação e mutação de recursos no Kubernetes. Com ele, é possível definir regras para garantir que os recursos criados estejam de acordo com as políticas de segurança e conformidade da organização. Além disso, o Kyverno pode ser utilizado para criar recursos de forma automática, como por exemplo, uma NetworkPolicy para cada Namespace criado.
 
-O HPA é um controlador que permite que o número de pods em um deployment, replicaset ou statefulset seja aumentado ou diminuído automaticamente com base em métricas de uso de CPU ou personalizadas fornecidas pelo usuário.
+É possível configurar o Kyverno de duas formas: Enforcing e Audit. No modo Enforcing, as políticas são aplicadas de forma obrigatória, ou seja, os recursos que não estiverem de acordo com as políticas definidas serão bloqueados. Já no modo Audit, as políticas são aplicadas de forma passiva, ou seja, os recursos que não estiverem de acordo com as políticas definidas serão apenas registrados, sem bloqueio.
 
-### O que é o Metrics Server?
+### Instalando o Kyverno
 
-O [Metrics Server](https://kubernetes.io/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/#metrics-server) é um agregador de métricas que coleta métricas de uso de CPU e memória de cada nó e pod do cluster Kubernetes, e disponibiliza essas métricas para o HPA.
-
-### Instalando o Metrics Server
+Vamos utilizar o Helm para instalar o Kyverno no nosso cluster. Primeiro, adicione o repositório do Kyverno:
 
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+helm repo add kyverno https://kyverno.github.io/kyverno/
+helm repo update
 ```
 
-### Utilizando o TOP para visualizar as métricas
+Agora, instale o Kyverno:
 
 ```bash
-kubectl top nodes
-kubectl top pods
+helm install kyverno kyverno/kyverno --namespace kyverno --create-namespace
 ```
 
-### Criando o HPA
+### Criando uma ClusterPolicy Validate
+
+Uma Validate Policy é utilizada para validar se os recursos criados no cluster estão de acordo com as políticas definidas.
+
+Vamos criar uma ClusterPolicy que valida se os recursos criados possuem a definição de limites de recursos. Crie o arquivo `require-resource-limits.yaml`:
 
 ```yaml
-apiVersion: autoscaling/v1
-kind: HorizontalPodAutoscaler
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
 metadata:
-  name: locust-hpa
+  name: require-resources-limits
 spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: nginx
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 50
+  validationFailureAction: Enforce
+  rules:
+  - name: validate-limits
+    match:
+      resources:
+        kinds:
+        - Pod
+    validate:
+      message: "Define resource limits"
+      patern:
+        spec:
+          containers:
+          - name: "*"
+            resources:
+              limits:
+                memory: "?*"
+                cpu: "?*"
 ```
 
-### O que é o Locust?
+Agora, aplique a ClusterPolicy no cluster:
 
-O [Locust](https://locust.io/) é uma ferramenta de teste de carga de código aberto. Ele permite que você escreva cenários de teste em Python para simular o comportamento de usuários reais e medir o desempenho do sistema sob carga.
-
-### Instalando o Locust via Deploy
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: locust-giropops
-  name: locust-giropops
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: locust-giropops
-  template:
-    metadata:
-      labels:
-        app: locust-giropops
-    spec:
-      containers:
-      - image: linuxtips/locust-giropops:1.0
-        name: locust-giropops
-        env:
-          - name:  LOCUST_LOCUSTFILE
-            value: "/usr/src/app/scripts/locustfile.py"
-        ports:
-        - containerPort: 8089
-        imagePullPolicy: Always
-        volumeMounts:
-        - name: locust-scripts
-          mountPath: /usr/src/app/scripts
-      volumes:
-      - name: locust-scripts
-        configMap:
-          name: locust-scripts
-          optional: true
+```bash
+kubectl apply -f require-resource-limits.yaml
 ```
 
-### Criando o Service
+Se tentarmos criar um Pod sem definir limites de recursos, o Kyverno irá bloquear a criação do recursos.
+
+### Criando uma Policy Mutate 
+
+Com uma Mutate Policy, é possível alterar os recursos criados no cluster de acordo com as políticas definidas. 
+
+Vamos criar uma Policy que adiciona o label `projeto: pick` em todos os Namespaces criados. Crie o arquivo `add-label-namespaces.yaml`:
 
 ```yaml
-apiVersion: v1
-kind: Service
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
 metadata:
-  name: locust-giropops
-spec:
-  selector:
-    app: locust-giropops
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8089
-  type: ClusterIP
-```
-
-### Criando o Ingress
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: locust-giropops
+  name: add-label-namespaces
 spec:
   rules:
-  - host: locust-giropops.k8s.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: locust-giropops
-            port:
-              number: 80
+  - name: add-label-ns
+    match:
+      resources:
+        kinds:
+        - Namespace
+    mutate:
+      pathStrategicMerge:
+        metadata:
+          labels:
+            projeto: "pick"
 ```
 
-### Criando o ConfigMap
+Agora, aplique a ClusterPolicy no cluster:
+
+```bash
+kubectl apply -f add-label-namespaces.yaml
+```
+
+Ao criar um Namespace, o Kyverno irá adicionar o label `projeto: pick` automaticamente.
+
+### Criando uma Policy Generate
+
+Com uma Generate Policy, é possível criar recursos de forma automática no cluster de acordo com as políticas definidas. Vamos fazer um exemplo de uma Generate Policy que cria um `ConfigMap` para cada `Namespace` criado.
+
+Crie o arquivo `create-configmap-ns.yaml`:
 
 ```yaml
-apiVersion: v1
-data:
-  locustfile.py: |-
-    from locust import HttpUser, task, between
-
-    class Giropops(HttpUser):
-        wait_time = between(1, 2)
-
-        @task(1)
-        def listar_senha(self):
-            self.client.get("/")
-kind: ConfigMap
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
 metadata:
-  name: locust-scripts
+  name: generate-cm-add-ns
+spec:
+  rules:
+  - name: generate-cm-add-ns
+    match:
+      resources:
+        kinds:
+        - Namespace
+    generate:
+      apiVersion: v1
+      kind: ConfigMap
+      name: default-configmap
+      namespace: "{{request.object.metadata.name}}"
+      data:
+        key1: "Giropops"
+        key2: "Strigus"
 ```

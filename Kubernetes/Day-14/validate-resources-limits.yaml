@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v1                       # Versão da API que define uma política
+kind: ClusterPolicy                             # Tipo de política que estamos definindo
+metadata:                                       # Metadados da política
+  name: require-resources-limits                # Nome da política
+spec:                                           # Especificações da política
+  validationFailureAction: Enforce              # Ação que será tomada em caso de falha na validação
+  rules:                                        # Regras da política
+  - name: validate-limits                       # Nome da regra
+    match:                                      # Condições para aplicar a regra
+      resources:                                # Recursos que serão validados
+        kinds:                                  # Tipos de recursos que serão validados
+        - Pod                                   # Tipo de recurso que será validado
+    validate:                                   # Validações que serão aplicadas
+      message: "Define resource limits"         # Mensagem de erro
+      patern:                                   # Padrão que será validado
+        spec:                                   # Especificações do recurso
+          containers:                           # Containers que serão validados
+          - name: "*"                           # Nome do container que será validado
+            resources:                          # Recursos que serão validados
+              limits:                           # Limites que serão validados
+                memory: "?*"                    # Limite de memória
+                cpu: "?*"                       # Limite de CPU

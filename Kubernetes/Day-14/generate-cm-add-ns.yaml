@@ -1,0 +1,19 @@
+apiVersion: kyverno.io/v1                             # Versão da API que define uma política
+kind: ClusterPolicy                                   # Tipo de política que estamos definindo
+metadata:                                             # Metadados da política
+  name: generate-cm-add-ns                            # Nome da política
+spec:                                                 # Especificações da política
+  rules:                                              # Regras da política
+  - name: generate-cm-add-ns                          # Nome da regra
+    match:                                            # Condições para aplicar a regra
+      resources:                                      # Recursos que serão afetados pela regra
+        kinds:                                        # Tipos de recursos que serão afetados
+        - Namespace                                   # Tipo do recurso
+    generate:                                         # Geração de recursos
+      apiVersion: v1                                  # Versão da API que define um ConfigMap
+      kind: ConfigMap                                 # Tipo do recurso que será gerado
+      name: default-configmap                         # Nome do recurso que será gerado
+      namespace: "{{request.object.metadata.name}}"   # Namespace onde o recurso será gerado
+      data:                                           # Dados do recurso que será gerado
+        key1: "Giropops"                              # Chave e valor do recurso que será gerado
+        key2: "Strigus"                               # Chave e valor do recurso que será gerado

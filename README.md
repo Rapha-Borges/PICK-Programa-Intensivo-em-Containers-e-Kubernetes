@@ -44,6 +44,8 @@ O PICK é um programa intensivo em containers e Kubernetes que tem como objetivo
 
 ### [Day 13 - Horizontal Pod Autoscaler(HPA), Metrics Server e Locust](/Kubernetes/Day-13/README.md)
 
+### [Day 14 - Policies no Kubernetes com Kyverno](/Kubernetes/Day-14/README.md)
+
 <br>
 
 ## Desafio Prático - Kubernetes
