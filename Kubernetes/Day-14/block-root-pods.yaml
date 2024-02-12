@@ -1,0 +1,19 @@
+apiVersion: kyverno.io/v1                         # Versão da API que define uma política
+kind: ClusterPolicy                               # Tipo de política que estamos definindo
+metadata:                                         # Metadados da política
+  name: block-root-pods                           # Nome da política
+spec:                                             # Especificações da política
+  validationFailureAction: Enforce                # Ação que será tomada em caso de falha na validação
+  rules:                                          # Regras da política
+  - name: check-runAsNonRoot                      # Nome da regra
+    match:                                        # Condições para aplicar a regra
+      resources:                                  # Recursos que serão validados
+        kinds:                                    # Tipos de recursos que serão validados
+        - Pod                                     # Tipo de recurso que será validado
+    validate:                                     # Validação que será aplicada
+      message: "Root user is not allowed"         # Mensagem de erro
+      pattern:                                    # Padrão que será validado
+        spec:                                     # Especificações do recurso
+          containers:                             # Containers do recurso
+          - securityContext:                      # Contexto de segurança do container
+              runAsNonRoot: true                  # O container deve ser executado como um usuário não-root

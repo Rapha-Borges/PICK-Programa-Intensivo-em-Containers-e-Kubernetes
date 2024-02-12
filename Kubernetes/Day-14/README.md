@@ -118,3 +118,87 @@ spec:
         key1: "Giropops"
         key2: "Strigus"
 ```
+
+### Criando uma Policy de Proibição
+
+Com uma Policy de Proibição, é possível bloquear a criação de recursos no cluster de acordo com as políticas definidas. Vamos fazer um exemplo de uma Policy de Proibição que bloqueia a criação de Pods que estejam rodando como root.
+
+Crie o arquivo `block-root-pods.yaml`:
+
+```yaml
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: block-root-pods
+spec:
+  validationFailureAction: Enforce
+  rules:
+  - name: check-runAsNonRoot
+    match:
+      resources:
+        kinds:
+        - Pod
+    validate:
+      message: "Root user is not allowed"
+      pattern:
+        spec:
+          containers:
+          - securityContext:
+              runAsNonRoot: true
+```
+
+### Criando uma Policy para permitir apenas imagens de um registry específico
+
+Podemos criar uma Policy para permitir apenas imagens de um registry específico. Vamos fazer um exemplo de uma Policy que permite apenas imagens do registry `cgr.dev/chainguard`.
+
+Crie o arquivo `allow-only-chainguard-images.yaml`:
+
+```yaml
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: allow-only-chainguard-images
+spec:
+  validationFailureAction: enforce
+  rules:
+  - name: trusted-registry
+    match:
+      resources:
+        kinds:
+        - Pod
+    validate:
+      message: "Image is not from trusted registry"
+      pattern:
+        spec:
+          containers:
+          - image: "cgr.dev/chainguard/*"
+```
+
+### Utilizando o Exclude
+
+Podemos utilizar o `exclude` para excluir recursos que não devem ser validados pela Policy. Vamos fazer um exemplo de uma Policy que permite apenas imagens do registry `cgr.dev/chainguard`, mas exclui o Namespace `no-chainguard`.
+
+```yaml
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: allow-trusted-registry-except-no-chainguard
+spec:
+  validationFailureAction: enforce
+  rules:
+  - name: trusted-registry-except-no-chainguard
+    match:
+      resources:
+        kinds:
+        - Pod
+    exclude:
+      resources:
+        namespaces:
+        - no-chainguard
+    validate:
+      message: "Image is not from trusted registry"
+      pattern:
+        spec:
+          containers:
+          - image: "cgr.dev/chainguard/*"
+```
