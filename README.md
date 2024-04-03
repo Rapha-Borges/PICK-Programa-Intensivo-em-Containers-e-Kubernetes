@@ -46,6 +46,8 @@ O PICK é um programa intensivo em containers e Kubernetes que tem como objetivo
 
 ### [Day 14 - Policies no Kubernetes com Kyverno](/Kubernetes/Day-14/README.md)
 
+### [Day 15 - Taints, Tolerations e Node Affinity](/Kubernetes/Day-15/README.md)
+
 ## CKA
 
 ### [Day 1 - Introdução ao CKA](/CKA/Day-1/README.md)
