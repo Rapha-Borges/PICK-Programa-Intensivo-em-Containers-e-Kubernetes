@@ -1,3 +1,64 @@
+# Kind
+
+1. Crie o cluster `kind`:
+
+cat <<EOF | kind create cluster --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: worker
+- role: worker
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443
+    protocol: TCP
+EOF
+
+2. Crie o ingress:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+```
+
+3. Adicione o Metric Server:
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.3/components.yaml
+```
+
+4. Edite o deployment do Metric Server:
+
+```bash
+kubectl edit deployment metrics-server -n kube-system
+```
+
+5. Adicione o campo `--kubelet-insecure-tls` no container `metrics-server` conforme abaixo:
+
+```yaml
+spec:
+  template:
+    spec
+      containers:
+      - args:
+        - --cert-dir=/tmp
+        - --secure-port=4443
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        - --kubelet-use-node-status-port
+        - --metric-resolution=15s
+        - --kubelet-insecure-tls
+        name: metrics-server
+```
+
 # CKA
 
 ## Adicione a taint NoSchedule em um dos nós e remova todos os pods em execução nesse nó:
