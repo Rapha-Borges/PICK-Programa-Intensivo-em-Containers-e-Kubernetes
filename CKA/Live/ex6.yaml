@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron
+spec:
+  jobTemplate:
+    metadata:
+      name: cron
+    spec:
+      completions: 5
+      activeDeadlineSeconds: 15
+      parallelism: 5
+      template:
+        metadata:
+          name: cron
+        spec:
+          containers:
+          - image: busybox
+            name: cron
+            resources: {}
+          restartPolicy: OnFailure
+  schedule: '*/1 * * * *'
+status: {}

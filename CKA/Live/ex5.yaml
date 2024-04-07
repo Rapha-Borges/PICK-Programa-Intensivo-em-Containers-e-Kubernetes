@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ex5
+  name: ex5
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ex5
+  template:
+    metadata:
+      labels:
+        app: ex5
+    spec:
+      initContainers:
+      - image: busybox
+        name: busybox
+        command: ['sh', '-c', 'echo Hello, World! > /volume/initfile.txt']
+        volumeMounts:
+        - name: volume
+          mountPath: /volume
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+        volumeMounts:
+        - name: volume
+          mountPath: /volume
+      volumes:
+      - name: volume
+        emptyDir: {}
