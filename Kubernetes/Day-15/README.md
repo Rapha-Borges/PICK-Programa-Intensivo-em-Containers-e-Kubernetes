@@ -84,9 +84,35 @@ Por fim, para remover o Taint do Node `node03`, execute o comando:
 kubectl taint nodes node03 gpu-
 ```
 
-## Labels, Affinity e Anti-Affinity
+## Labels
 
 Labels são usadas para identificar recursos no Kubernetes. Elas são pares chave-valor que são anexados a recursos como Pods e Nodes. Labels são usadas para identificar recursos e para selecionar recursos para operações como escalonamento e filtragem.
+
+### Adicionando Labels
+
+Vamos criar um cenário onde temos 5 Nodes em alta disponibilidade, separados em 2 regiões e 3 zonas de disponibilidade. Com isso, podemos gereciar melhor a distribuição dos Pods levando em consideração questões de latência e disponibilidade.
+
+Para isso, vamos adicionar os labels `region` e `zone` nos Nodes. Execute os comandos abaixo:
+
+```bash
+kubectl label nodes node01 region=us-east zone=us-east-1
+kubectl label nodes node02 region=us-east zone=us-east-2
+kubectl label nodes node03 region=us-east zone=us-east-3
+kubectl label nodes node04 region=us-west zone=us-west-1
+kubectl label nodes node05 region=us-west zone=us-west-2
+```
+
+Com essas labels, definimos que os Nodes `node01`, `node02` e `node03` estão na região `us-east`, porém em zonas diferentes. E os Nodes `node04` e `node05` estão na região `us-west`, também em zonas diferentes.
+
+Para verificar os labels dos Nodes, execute o comando:
+
+```bash
+kubectl get nodes --show-labels
+```
+
+As labels também podem ser utilizadas para garantir que um determinado Pod que precisa de um recurso específico seja executado em um Node que possui este recurso. Como por exemplo, um Pod que precisa de uma GPU. Para isso, podemos adicionar a label `gpu=true` no Node que possui a GPU e utilizar o Node Affinity para garantir que o Pod seja executado neste Node.
+
+## Affinity
 
 ### Node Affinity
 
@@ -96,3 +122,73 @@ Existem dois tipos de Node Affinity:
 
 - **RequiredDuringSchedulingIgnoredDuringExecution**: O Pod só será agendado em Nodes que atendem aos requisitos de Node Affinity.
 - **PreferredDuringSchedulingIgnoredDuringExecution**: O Pod será agendado em Nodes que atendem aos requisitos de Node Affinity, mas não é uma garantia.
+
+Para testar o Node Affinity, vamos criar um deployment que só pode ser executado em Nodes da região `us-east`. Para isso, adicione o campo `nodeAffinity` no arquivo `nginx-deployment-affinity.yaml` conforme abaixo.
+
+```yaml
+nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+            - matchExpressions:
+                - key: "region"
+                  operator: "In"
+                  values:
+                    - "us-east"
+
+```
+
+Em seguida, aplique o arquivo `nginx-deployment-affinity.yaml`:
+
+```bash
+kubectl apply -f nginx-deployment-affinity.yaml
+```
+
+Com o comando `kubectl get pods -o wide`, verifique que o Pod está sendo executado nos Nodes `node01`, `node02` e `node03`, que estão na região `us-east`.
+
+## Anti-Affinity
+
+O Anti-Affinity é o oposto do Affinity. Ele é usado para garantir que os Pods não sejam agendados em Nodes específicos. Com isso, aumentamos a disponibilidade e a tolerância a falhas dos nossos Pods distribuindo-os em diferentes Nodes que estão em diferentes regiões, zonas ou datacenters.
+
+Existem dois tipos de Anti-Affinity:
+
+- **RequiredDuringSchedulingIgnoredDuringExecution**: O Pod não será agendado em Nodes que atendem aos requisitos de Anti-Affinity.
+- **PreferredDuringSchedulingIgnoredDuringExecution**: O Pod será agendado em Nodes que atendem aos requisitos de Anti-Affinity, mas não é uma garantia.
+
+Para testar o Anti-Affinity, vamos utilizar o Pod Affinity para criar um deployment que irá restrigir a execução dos Pods em somente uma região, independente da quantidade de Nodes disponíveis. Para isso, adicione o campo `podAffinity` no arquivo `nginx-deployment-anti-affinity.yaml` conforme abaixo.
+
+```yaml
+podAntiAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+      matchLabels:
+        app: nginx
+      topologyKey: "region"
+```
+
+Em seguida, aplique o arquivo `nginx-deployment-anti-affinity.yaml`:
+
+```bash
+kubectl apply -f nginx-deployment-anti-affinity.yaml
+```
+
+Podemos fazer diferente, utilizando o Pod Anti-Affinity para criar um deployment que irá restrigir a execução dos Pods em zonas de disponibilidade diferentes. Tendo um cenário de alta disponibilidade, onde cada Pod estará obrigatoriamente em uma zona de disponibilidade diferente. Para isso, adicione as seguintes linhas no arquivo `nginx-deployment-anti-affinity-zone.yaml`:
+
+```yaml
+podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+        matchLabels:
+          app: nginx
+        topologyKey: "az"
+```
+
+Em seguida, aplique o arquivo `nginx-deployment-anti-affinity-zone.yaml`:
+
+```bash
+kubectl apply -f nginx-deployment-anti-affinity-zone.yaml
+```
+
+Com o comando `kubectl get pods -o wide`, verifique que os Pods estão sendo executados em zonas de disponibilidade diferentes.
+
+É importante ressaltar que para utilizar o Node Affinity e Anti-Affinity da melhor forma, é necessário planejar e entender a topologia da sua infraestrutura, para que não haja impactos negativos na execução dos seus Pods. Como por exemplo, a falta de recursos para execução dos Pods ou a distribuição inadequada dos Pods em Nodes que estão em regiões ou zonas de disponibilidade diferentes.
+
