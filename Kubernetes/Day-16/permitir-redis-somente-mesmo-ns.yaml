@@ -1,0 +1,12 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-allow-same-namespace
+  namespace: giropops
+spec:
+  podSelector:
+    matchLabels:
+      app: redis 
+  ingress:
+  - from:
+    - podSelector: {}
